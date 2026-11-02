@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATOME | Email Signatures</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#222832;background:#f5f6f8}
+*{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #e3e6eb;padding:19px max(calc((100vw - 990px)/2),20px);font-size:18px;font-weight:700}header span{color:#e60032;margin-right:9px}
+main{max-width:1020px;margin:0 auto;padding:24px 15px 50px}.layout{display:grid;grid-template-columns:270px 1fr;gap:20px;align-items:start}.stack{display:grid;gap:18px}.card{background:#fff;border:1px solid #e2e5ea;border-radius:12px;padding:19px;min-width:0;box-shadow:0 4px 16px #00000005}
+h2{margin:0 0 17px;font-size:17px}label{display:block;font-size:12px;font-weight:bold;margin-bottom:6px}.field{margin-bottom:15px}input{width:100%;border:1px solid #d5d9e0;border-radius:6px;padding:10px;font:13px Arial,sans-serif}input:focus{outline:2px solid #ffb2c2;border-color:#e60032}input::placeholder{color:#9aa3ae}details{border-top:1px solid #e5e7eb;padding-top:14px;margin-top:18px}summary{cursor:pointer;font-size:13px;font-weight:bold}details p{font-size:12px;line-height:1.5;color:#566071}.preview{overflow-x:auto;padding:14px 0 17px;min-height:68px}button{border:1px solid #e60032;background:#e60032;color:#fff;border-radius:7px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer}button.secondary{background:#fff;color:#e60032}.actions{display:flex;flex-wrap:wrap;gap:8px}.meta{margin:-7px 0 0;font-size:11px;color:#687284}.meta.warning{color:#b15b0a}.meta.danger{color:#b4233c}.status{margin:9px 0 0;font-size:12px;color:#257547;min-height:0;line-height:1.5}.status:empty{display:none}.help{font-size:11px;color:#687284;margin:7px 0 0;line-height:1.5}.tag{font-size:11px;font-weight:400;color:#687284}.hint{font-size:12px;line-height:1.45;color:#566071;margin:0 0 14px}
+@media(max-width:750px){.layout{grid-template-columns:1fr}main{padding:15px}.card{padding:15px}}
+</style>
+</head>
+<body>
+<header><span>Atome</span> Email Signatures</header>
+<main><div class="layout">
+<section class="card"><h2>Employee Details</h2>
+<div class="field"><label for="full">Full name</label><input id="full" maxlength="70" placeholder="Full name" autocomplete="off"></div>
+<div class="field"><label for="job">Job title</label><input id="job" maxlength="70" placeholder="Job title" autocomplete="off"></div>
+<div class="field"><label for="phone">Phone number</label><input id="phone" maxlength="24" type="tel" placeholder="+216 XX XXX XXX" autocomplete="off"></div>
+</section>
+<div class="stack"><section class="card"><h2>Basic Signature</h2>
+<div class="preview" id="basicPreview"></div><p id="basicBytes" class="meta"></p>
+<div class="actions"><button data-source="basic">Copy HTML</button><button class="secondary" data-rich="basic">Copy signature</button></div><p class="help">HTML: paste into the source editor. Signature: paste into Outlook or another rich-text editor.</p><p id="basicStatus" class="status" role="status" aria-live="polite"></p>
+</section><section class="card"><h2>Marketing Signature</h2>
+<div class="preview" id="marketingPreview"></div><p id="marketingBytes" class="meta"></p>
+<div class="actions"><button data-source="marketing">Copy HTML</button><button class="secondary" data-rich="marketing">Copy signature</button></div><p class="help">HTML: paste into the source editor. Signature: paste into Outlook or another rich-text editor.</p><p id="marketingStatus" class="status" role="status" aria-live="polite"></p>
+</section></div>
+</div></main>
+<script>
+'use strict';
+const SITE='https://www.atome.tn',MAPS='https://maps.app.goo.gl/JkzXDeTqX3GBbUTD7',LIMIT=2047;
+const $=id=>document.getElementById(id),fields=['full','job','phone'];
+const IMG={logo:new URL('./logo-atome.png',document.baseURI).href,banner:new URL('./marketing-banner.jpg',document.baseURI).href};
+const escapeHTML=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function data(){return Object.fromEntries(fields.map(k=>[k,$(k).value.trim()]));}
+function hostingReady(){
+  const u=new URL(document.baseURI);
+  return u.protocol==='https:'&&u.hostname!=='localhost'&&u.hostname!=='127.0.0.1';
+}
+const hrefTel=s=>'tel:'+s.replace(/[^+0-9]/g,'');
+function logo(){
+  const src=IMG.logo;
+  return `<a href="${SITE}"><img src="${escapeHTML(src)}" width="85" alt="ATOME" style="display:block;border:0"></a>`;
+}
+function baseStart(width,img,style){return `<table role="presentation" width="${width}" cellpadding="0" cellspacing="0" style="font-family:Arial,sans-serif;font-size:11px;color:#27303a;border-collapse:collapse"><tr><td width="98" valign="middle">${img}</td><td valign="middle" style="border-left:2px solid #e60032;padding:3px 0 3px 11px;line-height:17px;${style||''}">`}
+function nameLine(name){return name?`<b style="font-size:13px;color:#20252b">${escapeHTML(name)}</b><br>`:''}
+function jobLine(job){return job?`<b style="color:#e60032">${escapeHTML(job)}</b><br>`:''}
+function phoneLine(phone){return phone?`<a href="${escapeHTML(hrefTel(phone))}" style="color:#27303a;text-decoration:none">☎ ${escapeHTML(phone)}</a>`:''}
+const webLine=`<a href="${SITE}" style="color:#27303a;text-decoration:none">www.atome.tn</a>`;
+function basic(d,preview=false){return baseStart(350,logo())+nameLine(d.full)+jobLine(d.job)+(phoneLine(d.phone)?phoneLine(d.phone)+'<br>':'')+webLine+'</td></tr></table>';}
+function marketing(d,preview=false){
+ let content=baseStart(400,logo())+nameLine(d.full)+jobLine(d.job);
+ if(d.phone) content+=phoneLine(d.phone)+'&nbsp;&nbsp;|&nbsp;&nbsp;';
+ content+=webLine+`<br><a href="${MAPS}" style="font-size:9px;color:#69717b;text-decoration:none">6A, Avenue de l’Artisanat, Charguia 2<br>2035 Ariana, Tunis, Tunisie</a></td></tr></table>`;
+ const bannerSrc=IMG.banner;
+ content+=`<table width="400" cellpadding="0" cellspacing="0" style="border-top:2px solid #e60032;margin-top:7px"><tr><td style="padding-top:5px"><a href="${SITE}"><img src="${escapeHTML(bannerSrc)}" width="400" alt="ATOME" style="display:block;border:0"></a></td></tr></table>`;
+ return content;
+}
+function markup(type,d,preview=false){return type==='basic'?basic(d,preview):marketing(d,preview)}
+function bytes(s){return new TextEncoder().encode(s).length}
+function showStatus(type,message,error=false){const el=$(type+'Status');el.textContent=message;el.style.color=error?'#b4233c':'#257547';}
+function refresh(){const d=data();for(const type of ['basic','marketing']){
+ $(type+'Preview').innerHTML=markup(type,d,true);
+ const n=bytes(markup(type,d));const el=$(type+'Bytes');el.textContent='HTML: '+n+' / '+LIMIT+' bytes';el.className='meta'+(n>LIMIT?' danger':n>1650?' warning':'');
+ }}
+fields.forEach(k=>$(k).addEventListener('input',refresh));refresh();
+function ready(type,d,forCpanel){
+ if(!d.full||!d.job||!d.phone){showStatus(type,'Enter full name, job title and phone number.',true);return false;}
+ if(!hostingReady()){showStatus(type,'Publish index.html and both images together on GitHub Pages before copying.',true);return false;}
+ if(forCpanel&&bytes(markup(type,d))>LIMIT){showStatus(type,'HTML exceeds 2047 bytes for cPanel. Use a shorter GitHub repository URL or shorten employee details.',true);return false;}
+ return true;
+}
+function fallbackCopyText(content){
+ const box=document.createElement('textarea');box.value=content;box.setAttribute('readonly','');
+ box.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+ document.body.appendChild(box);box.focus();box.select();
+ let ok=false;try{ok=document.execCommand('copy')}finally{box.remove()}
+ if(!ok)throw Error('Text copy not supported');
+}
+function fallbackCopyRich(html){
+ // Select rendered HTML so the browser puts formatted text and image references on the clipboard.
+ // This is essential for file:// pages where the asynchronous Clipboard API may be unavailable.
+ const holder=document.createElement('div');holder.innerHTML=html;
+ holder.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:white';
+ document.body.appendChild(holder);
+ const sel=window.getSelection(),old=[];
+ for(let i=0;i<sel.rangeCount;i++)old.push(sel.getRangeAt(i).cloneRange());
+ const range=document.createRange();range.selectNodeContents(holder);sel.removeAllRanges();sel.addRange(range);
+ let ok=false;
+ try{ok=document.execCommand('copy')}finally{
+   sel.removeAllRanges();for(const r of old)sel.addRange(r);holder.remove();
+ }
+ if(!ok)throw Error('Rich copy not supported');
+}
+function plainVersion(html){
+ const el=document.createElement('div');el.innerHTML=html;
+ return (el.innerText||el.textContent||'ATOME email signature').trim();
+}
+async function copySource(type){
+ const d=data();if(!ready(type,d,true))return;
+ const html=markup(type,d);
+ try{
+   if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(html);
+   else fallbackCopyText(html);
+   showStatus(type,'HTML code copied. Paste into the cPanel/Roundcube HTML source editor (<>).');
+ }catch(err){
+   try{fallbackCopyText(html);showStatus(type,'HTML code copied. Paste into the cPanel/Roundcube HTML source editor (<>).');}
+   catch{showStatus(type,'Clipboard access blocked. Open in Chrome or Edge and allow clipboard permission.',true)}
+ }
+}
+async function copyRich(type){
+ const d=data();if(!ready(type,d,false))return;
+ const html=markup(type,d);
+ try{
+   if(navigator.clipboard?.write&&typeof ClipboardItem!=='undefined'){
+     const item=new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([plainVersion(html)],{type:'text/plain'})});
+     await navigator.clipboard.write([item]);
+   }else fallbackCopyRich(html);
+   showStatus(type,'Formatted signature copied. Paste directly into the Outlook signature editor (Ctrl+V).');
+ }catch(err){
+   try{fallbackCopyRich(html);showStatus(type,'Formatted signature copied. Paste directly into the Outlook signature editor (Ctrl+V).');}
+   catch{showStatus(type,'Formatted copy blocked. Open in Chrome or Edge and allow clipboard access.',true)}
+ }
+}
+document.querySelectorAll('[data-source]').forEach(btn=>btn.addEventListener('click',()=>copySource(btn.dataset.source)));
+document.querySelectorAll('[data-rich]').forEach(btn=>btn.addEventListener('click',()=>copyRich(btn.dataset.rich)));
+</script>
+</body></html>
